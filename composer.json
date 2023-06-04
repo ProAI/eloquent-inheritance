@@ -1,5 +1,5 @@
 {
-    "name": "proai/eloquent-versioning",
+    "name": "proai/eloquent-inheritance",
     "description": "Single table inheritance for Laravel inspired by the Rails implementation",
     "keywords": [
         "laravel",
