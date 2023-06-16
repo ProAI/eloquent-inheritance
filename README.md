@@ -60,7 +60,7 @@ It is not possible to use `new Pet($attributes);` when you specify the type in `
 If you want to use different names for the type column than the classname, you can use the static `$inheritanceMap` property:
 
 ```php
-class Pet
+class Pet extends Model
 {
     use Inheritance;
 
