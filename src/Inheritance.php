@@ -15,13 +15,6 @@ trait Inheritance
     public static $inheritanceColumn = 'type';
 
     /**
-     * Defines the type name for use with single table inheritance.
-     *
-     * @var mixed
-     */
-    public static $inheritanceType;
-
-    /**
      * Create a new Eloquent model instance.
      *
      * @param  array  $attributes
@@ -79,10 +72,6 @@ trait Inheritance
      */
     protected static function getInheritanceType()
     {
-        if (isset(static::$inheritanceType)) {
-            return static::$inheritanceType;
-        }
-
         $class = static::class;
         $flippedMap = array_flip(static::$inheritanceMap ?? []);
 
@@ -92,7 +81,7 @@ trait Inheritance
             $type = $class;
         }
 
-        return static::$inheritanceType = $type;
+        return $type;
     }
 
     /**
