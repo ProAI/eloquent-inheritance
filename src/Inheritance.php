@@ -47,7 +47,7 @@ trait Inheritance
         }
 
         static::addGlobalScope(function ($query) {
-            $query->where(static::$inheritanceColumn, static::getInheritanceType());
+            $query->where($query->getModel()->getTable().'.'.static::$inheritanceColumn, static::getInheritanceType());
         });
 
         static::creating(function ($model) {
