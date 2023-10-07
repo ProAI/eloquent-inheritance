@@ -177,6 +177,22 @@ trait Inheritance
     }
 
     /**
+     * Get the class name for polymorphic relations.
+     *
+     * @return string
+     */
+    public function getMorphClass()
+    {
+        $class = $this->getRootClass();
+
+        if ($class === static::class) {
+            return parent::getMorphClass();
+        }
+
+        return (new $class)->getMorphClass();
+    }
+
+    /**
      * Get the class name of the root class.
      *
      * @return string
