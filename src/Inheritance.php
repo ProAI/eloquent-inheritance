@@ -163,7 +163,15 @@ trait Inheritance
      */
     public function getTable()
     {
-        return $this->table ?? Str::snake(Str::pluralStudly(class_basename($this->getRootClass())));
+        if (isset($this->table)) {
+            return $this->table;
+        }
+
+        if (method_exists($this, 'getInheritanceTable')) {
+            return $this->getInheritanceTable();
+        }
+
+        return Str::snake(Str::pluralStudly(class_basename($this->getRootClass())));
     }
 
     /**
