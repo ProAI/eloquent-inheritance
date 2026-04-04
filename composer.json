@@ -22,8 +22,11 @@
         "illuminate/support": "^11.0||^12.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^7.0||^8.0",
-        "phpunit/phpunit": "^9.5.10||^10.0"
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "laravel/pint": "^1.27",
+        "larastan/larastan": "^3.9",
+        "pestphp/pest-plugin-type-coverage": "^3.6"
     },
     "autoload": {
         "psr-4": {
@@ -33,6 +36,27 @@
     "autoload-dev": {
         "psr-4": {
             "ProAI\\Inheritance\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "lint": "pint",
+        "test:lint": "pint --test",
+        "test:types": "phpstan analyse",
+        "test:type-coverage": "pest --type-coverage --min=100",
+        "test:unit": "pest",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:unit"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

@@ -2,8 +2,9 @@
 
 namespace ProAI\Inheritance;
 
-use Illuminate\Support\Str;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 trait Inheritance
 {
@@ -17,7 +18,7 @@ trait Inheritance
     /**
      * Create a new Eloquent model instance.
      *
-     * @param  array  $attributes
+     * @param  array<string, mixed>  $attributes
      * @return void
      */
     public function __construct(array $attributes = [])
@@ -40,7 +41,7 @@ trait Inheritance
      *
      * @return void
      */
-    protected static function bootInheritance()
+    protected static function bootInheritance(): void
     {
         if (static::isRootModel()) {
             return;
@@ -60,62 +61,71 @@ trait Inheritance
      *
      * @return bool
      */
-    protected static function isRootModel()
+    protected static function isRootModel(): bool
     {
-        return self::class === static::class;
+        return static::class === self::class;
     }
 
     /**
      * Get the column name for use with single table inheritance.
      *
-     * @return mixed
+     * @return string
      */
-    protected static function getInheritanceType()
+    protected static function getInheritanceType(): string
     {
         $class = static::class;
-        $flippedMap = array_flip(static::$inheritanceMap ?? []);
+        $map = static::$inheritanceMap ?? [];
 
-        if (isset($flippedMap[$class])) {
-            $type = $flippedMap[$class];
-        } else {
-            $type = $class;
+        if (is_array($map)) {
+            foreach ($map as $type => $mappedClass) {
+                if ($mappedClass === $class) {
+                    return (string) $type;
+                }
+            }
         }
 
-        return $type;
+        return $class;
     }
 
     /**
      * Create a new instance of the model by type.
      *
-     * @param  array  $attributes
+     * @param  array<string, mixed>  $attributes
      * @return static
      */
-    public static function new($attributes = [])
+    public static function new(array $attributes = []): static
     {
         $class = static::getChildClass($attributes);
 
         if ($class) {
-            return new $class($attributes);
+            $instance = new $class($attributes);
+            if ($instance instanceof static) {
+                return $instance;
+            }
         }
 
-        return new static($attributes);
+        return new (static::class)($attributes);
     }
 
     /**
      * Create a new instance of the model by type.
      *
-     * @param  array  $attributes
+     * @param  array<string, mixed>  $attributes
      * @param  bool  $exists
      * @return static
      */
-    public function newInstance($attributes = [], $exists = false)
+    public function newInstance($attributes = [], $exists = false): static
     {
         $class = static::getChildClass($attributes);
 
-        // This method just provides a convenient way for us to generate fresh model
-        // instances of this current model. It is particularly useful during the
-        // hydration of new objects via the Eloquent query builder instances.
-        $model = $class ? new $class : new static;
+        $model = new (static::class);
+
+        if ($class) {
+            $child = new $class;
+            if ($child instanceof static) {
+                $model = $child;
+            }
+        }
 
         $model->exists = $exists;
 
@@ -135,11 +145,11 @@ trait Inheritance
     /**
      * Create a new model instance that is existing.
      *
-     * @param  array  $attributes
+     * @param  array<string, mixed>  $attributes
      * @param  string|null  $connection
      * @return static
      */
-    public function newFromBuilder($attributes = [], $connection = null)
+    public function newFromBuilder($attributes = [], $connection = null): static
     {
         $attributes = (array) $attributes;
 
@@ -161,7 +171,7 @@ trait Inheritance
      *
      * @return string
      */
-    public function getTable()
+    public function getTable(): string
     {
         if (isset($this->table)) {
             return $this->table;
@@ -179,7 +189,7 @@ trait Inheritance
      *
      * @return string
      */
-    public function getForeignKey()
+    public function getForeignKey(): string
     {
         return Str::snake(class_basename($this->getRootClass())).'_'.$this->getKeyName();
     }
@@ -189,7 +199,7 @@ trait Inheritance
      *
      * @return string
      */
-    public function getMorphClass()
+    public function getMorphClass(): string
     {
         $class = $this->getRootClass();
 
@@ -197,7 +207,12 @@ trait Inheritance
             return parent::getMorphClass();
         }
 
-        return (new $class)->getMorphClass();
+        $instance = new $class;
+        if ($instance instanceof Model) {
+            return $instance->getMorphClass();
+        }
+
+        return parent::getMorphClass();
     }
 
     /**
@@ -205,7 +220,7 @@ trait Inheritance
      *
      * @return string
      */
-    protected function getRootClass()
+    protected function getRootClass(): string
     {
         return self::class;
     }
@@ -213,10 +228,10 @@ trait Inheritance
     /**
      * Get the class name of the child class.
      *
-     * @param  array  $attributes
+     * @param  array<string, mixed>  $attributes
      * @return ?string
      */
-    protected static function getChildClass($attributes)
+    protected static function getChildClass(array $attributes): ?string
     {
         if (! static::isRootModel()) {
             return null;
@@ -226,12 +241,13 @@ trait Inheritance
             return null;
         }
 
-        $type = $attributes[static::$inheritanceColumn];
+        $type = (string) $attributes[static::$inheritanceColumn];
+        $map = static::$inheritanceMap ?? [];
 
-        if (! isset(static::$inheritanceMap)) {
+        if (! is_array($map)) {
             return $type;
         }
 
-        return static::$inheritanceMap[$type] ?? $type;
+        return isset($map[$type]) ? (string) $map[$type] : $type;
     }
 }

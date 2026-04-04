@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src/
+        - tests/Fixtures/
+
+    level: 8
+
+    ignoreErrors:
+        - identifier: staticProperty.notFound
+          path: src/Inheritance.php
+        - identifier: nullCoalesce.property
+          path: src/Inheritance.php
+        - identifier: function.alreadyNarrowedType
+          path: src/Inheritance.php
